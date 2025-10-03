@@ -1,0 +1,850 @@
+<!--Code by Oluwakayode Caleb Ogeleyinbo-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Kayode School Fees Tracker helps schools manage student payments with real-time updates and secure authentication." />
+  <meta property="og:title" content="Kayode School Fees Tracker" />
+  <meta property="og:description" content="Track school fees, payments, and balances effortlessly with our Firebase-powered platform." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=800&q=60" />
+  <meta property="og:url" content="https://kayode-school-fees-tracker.firebaseapp.com" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/jpg" href="images/logo.jpg">
+  <title>D.I.T School Fees Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-bg: #ffe0b2;
+      --secondary-bg: #f8bbd0;
+      --header-bg: #ff4081;
+      --text-color: #333;
+      --feature-bg: #f3e5f5;
+      --dark-primary-bg: #121212;
+      --dark-secondary-bg: #1e1e1e;
+      --dark-header-bg: #333;
+      --dark-text-color: #e0e0e0;
+      --accent-color: #880e4f;
+      --dark-accent-color: #bb86fc;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding-top: 70px;
+      background: linear-gradient(to right, var(--primary-bg), var(--secondary-bg));
+      color: var(--text-color);
+      overflow-x: hidden;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--header-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      transition: opacity 0.5s ease;
+    }
+    .preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .preloader .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #fff;
+      border-top: 5px solid #2196f3;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .bg-image {
+      background: url("https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=800&q=60") no-repeat center center/cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: -1;
+      opacity: 0.2;
+      filter: brightness(0.9);
+      transition: transform 0.3s ease, filter 0.3s;
+      background-attachment: fixed;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background-color: var(--header-bg);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      animation: fadeInDown 1s ease-out;
+      flex-wrap: nowrap;
+      transition: background-color 0.3s, padding 0.3s, transform 0.3s;
+    }
+    header.shrink {
+      padding: 0.5rem 2rem;
+      transform: translateY(-5px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+      transition: font-size 0.3s;
+    }
+    header.shrink h1 {
+      font-size: 1.5rem;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .homepage-logo {
+      max-width: 50px; /* Adjust size as needed */
+      height: auto;
+      transition: filter 0.3s ease;
+    }
+    body.dark-mode .homepage-logo {
+      filter: brightness(0.8) contrast(1.2); /* Adjusts logo for dark mode */
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: max-height 0.5s ease, opacity 0.5s ease;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 1;
+      transform: translateX(0);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      position: relative;
+    }
+    nav a:hover,
+    nav a:focus-visible {
+      text-decoration: underline;
+      outline: none;
+    }
+    nav a:focus-visible {
+      box-shadow: 0 0 2px 2px #ff80ab;
+      border-radius: 4px;
+    }
+    nav a::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      z-index: 10;
+    }
+    nav a:hover::after,
+    nav a:focus-visible::after {
+      opacity: 1;
+      visibility: visible;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+      vertical-align: middle;
+      margin-left: 1rem;
+      flex-shrink: 0;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2196f3;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    body.dark-mode {
+      background: var(--dark-primary-bg);
+      color: var(--dark-text-color);
+    }
+    body.dark-mode header {
+      background-color: var(--dark-header-bg);
+    }
+    body.dark-mode nav a {
+      color: var(--dark-text-color);
+    }
+    body.dark-mode nav a:hover,
+    body.dark-mode nav a:focus-visible {
+      color: #90caf9;
+      text-decoration: underline;
+    }
+    body.dark-mode nav a::after {
+      background: #555;
+    }
+    body.dark-mode .bg-image {
+      filter: brightness(0.5) contrast(1.2);
+    }
+    body.dark-mode .hero {
+      color: #ccc;
+    }
+    body.dark-mode .hero h2 {
+      color: var(--dark-accent-color);
+    }
+    body.dark-mode .hero h2::after {
+      color: var(--dark-accent-color);
+    }
+    body.dark-mode .cta-buttons button {
+      background: linear-gradient(to right, #6a1b9a, #3700b3);
+    }
+    body.dark-mode .cta-buttons button:hover {
+      background: linear-gradient(to right, #3700b3, #6200ee);
+    }
+    body.dark-mode .features {
+      background: var(--dark-secondary-bg);
+    }
+    body.dark-mode .feature {
+      background: #2a2a2a;
+      box-shadow: 0 6px 15px rgba(255, 255, 255, 0.1);
+      color: #ddd;
+    }
+    body.dark-mode footer {
+      background-color: #212121;
+      color: #bbb;
+    }
+    body.dark-mode .gallery {
+      background: #333;
+    }
+    body.dark-mode .gallery img {
+      box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+    }
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      min-height: 90vh;
+      animation: zoomIn 1.2s ease-in-out;
+    }
+    .hero h2 {
+      font-size: 2.5rem;
+      color: var(--accent-color);
+      position: relative;
+      display: inline-block;
+    }
+    .hero h2::after {
+      content: "|";
+      position: absolute;
+      right: -10px;
+      color: var(--accent-color);
+      animation: blink 0.7s infinite;
+      font-weight: normal;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 0.5rem;
+      color: #444;
+    }
+    .progress-circle {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 1rem auto;
+    }
+    .progress-circle svg {
+      transform: rotate(-90deg);
+    }
+    .progress-circle circle {
+      fill: none;
+      stroke-width: 10;
+      stroke: #e0e0e0;
+    }
+    .progress-circle .progress {
+      stroke: var(--header-bg);
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 50.24;
+      transition: stroke-dashoffset 1s ease;
+      animation: progress 2s ease-in-out;
+    }
+    .progress-circle span {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+    body.dark-mode .progress-circle span {
+      color: var(--dark-accent-color);
+    }
+    .cta-buttons button {
+      background: linear-gradient(to right, #f06292, #ba68c8);
+      color: white;
+      border: none;
+      padding: 0.9rem 2rem;
+      margin: 1.5rem 0.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .cta-buttons button:hover,
+    .cta-buttons button:focus-visible {
+      background: linear-gradient(to right, #ab47bc, #f48fb1);
+      transform: scale(1.05) rotate(2deg);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      outline: none;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 4rem 2rem;
+      background: var(--feature-bg);
+    }
+    .feature {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .feature.in-view {
+      box-shadow: 0 0 20px rgba(255, 64, 129, 0.5);
+    }
+    .feature:hover,
+    .feature:focus-within {
+      transform: translateY(-5px) rotate(1deg);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      outline: none;
+    }
+    .feature img {
+      width: 60px;
+      margin-bottom: 1rem;
+    }
+    footer {
+      text-align: center;
+      background-color: #6a1b9a;
+      color: white;
+      padding: 1rem;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+    .gallery {
+      background: linear-gradient(to right, #ffcc80, #ffb74d);
+      padding: 4rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .gallery .image-container {
+      position: relative;
+    }
+    .gallery img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .gallery img:hover,
+    .gallery img:focus-visible {
+      transform: scale(1.05) rotate(-1deg);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      outline: none;
+    }
+    .gallery .caption {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      font-size: 0.9rem;
+    }
+    .gallery .image-container:hover .caption,
+    .gallery .image-container:focus-within .caption {
+      opacity: 1;
+    }
+    .hamburger {
+      display: none;
+      font-size: 1.8rem;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.3s ease;
+    }
+    .hamburger:focus-visible {
+      outline: 2px solid #ff80ab;
+      border-radius: 4px;
+    }
+    .hamburger:hover {
+      color: #f8bbd0;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--header-bg);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+      z-index: 1000;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .back-to-top:hover {
+      transform: scale(1.1);
+      background: #e91e63;
+    }
+    body.dark-mode .back-to-top {
+      background: #2196f3;
+    }
+    body.dark-mode .back-to-top:hover {
+      background: #1976d2;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding-top: 120px;
+      }
+      header {
+        flex-wrap: nowrap;
+      }
+      header h1 {
+        font-size: 1.5rem;
+      }
+      header.shrink h1 {
+        font-size: 1.3rem;
+      }
+      .logo-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .homepage-logo {
+        max-width: 40px; /* Smaller logo for mobile */
+      }
+      nav {
+        position: fixed;
+        top: 70px;
+        right: 0;
+        background-color: var(--header-bg);
+        flex-direction: column;
+        width: 230px;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        box-shadow: -3px 3px 12px rgba(0, 0, 0, 0.3);
+        border-bottom-left-radius: 10px;
+        border-top-left-radius: 10px;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+      }
+      nav.open {
+        max-height: 500px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      nav a {
+        padding: 1rem 1.5rem;
+        margin: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        opacity: 0;
+        transform: translateX(20px);
+        animation-fill-mode: forwards;
+        animation-duration: 0.4s;
+        animation-timing-function: ease;
+      }
+      nav.open a:nth-child(1) { animation-name: navLinkFade; animation-delay: 0.1s; }
+      nav.open a:nth-child(2) { animation-name: navLinkFade; animation-delay: 0.2s; }
+      nav.open a:nth-child(3) { animation-name: navLinkFade; animation-delay: 0.3s; }
+      nav.open .switch {
+        animation-name: navLinkFade;
+        animation-delay: 0.4s;
+        opacity: 1;
+        transform: translateX(0);
+      }
+      nav a:last-child {
+        border-bottom: none;
+      }
+      .switch {
+        margin: 1rem 1.5rem;
+        align-self: flex-start;
+        opacity: 0;
+        transform: translateX(20px);
+        animation-fill-mode: forwards;
+        animation-duration: 0.4s;
+        animation-timing-function: ease;
+      }
+      .hamburger {
+        display: block;
+      }
+    }
+    @media (max-width: 400px) {
+      header h1 {
+        font-size: 1.3rem;
+      }
+      header.shrink h1 {
+        font-size: 1.1rem;
+      }
+      .homepage-logo {
+        max-width: 35px; /* Even smaller for very small screens */
+      }
+      .hero h2 {
+        font-size: 1.5rem;
+      }
+      .hero p {
+        font-size: 0.9rem;
+      }
+      nav {
+        width: 200px;
+      }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes navLinkFade {
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes progress {
+      from { stroke-dashoffset: 251.2; }
+      to { stroke-dashoffset: 50.24; }
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body>
+  <div class="preloader" id="preloader">
+    <div class="spinner"></div>
+  </div>
+  <div class="bg-image"></div>
+  <header id="header" role="banner">
+    <div class="logo-container">
+      <img src="images/logo.jpg" alt="D.I.T School Fees Tracker Logo" class="homepage-logo">
+      <h1>D.I.T School Fees Tracker</h1>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-controls="navMenu" aria-expanded="false" type="button">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+    <nav id="navMenu" role="navigation" aria-label="Primary navigation">
+      <a href="#" data-tooltip="Go to Homepage">Home</a>
+      <a href="login.html" data-tooltip="Access Your Account">Login</a>
+      <a href="signup.html" data-tooltip="Create an Account">Sign Up</a>
+      <label class="switch" title="Toggle Dark Mode">
+        <input type="checkbox" id="darkModeToggle" aria-checked="false" />
+        <span class="slider round"></span>
+      </label>
+    </nav>
+  </header>
+  <main class="hero" data-aos="zoom-in" data-aos-duration="1000">
+    <h2 class="animated-text" tabindex="0">Manage and Track School Payments Easily</h2>
+    <p data-aos="fade-up" data-aos-delay="200" tabindex="0">
+      Our system helps you keep records of student fees, payments, balances, and more.
+    </p>
+    <div class="progress-circle" data-aos="zoom-in" data-aos-delay="300">
+      <svg width="100" height="100">
+        <circle cx="50" cy="50" r="40" />
+        <circle class="progress" cx="50" cy="50" r="40" />
+      </svg>
+      <span>80%</span>
+    </div>
+    <div class="cta-buttons" data-aos="fade-up" data-aos-delay="400">
+      <button onclick="location.href='login.html'">Login</button>
+      <button onclick="location.href='signup.html'">Sign Up</button>
+    </div>
+  </main>
+  <section class="features">
+    <div class="feature" data-aos="flip-left" data-aos-delay="0" tabindex="0">
+      <img src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png" alt="Student profile icon" loading="lazy" />
+      <h3>Student Profiles</h3>
+      <p>Track individual payment histories and balances.</p>
+    </div>
+    <div class="feature" data-aos="flip-left" data-aos-delay="200" tabindex="0">
+      <img src="https://cdn-icons-png.flaticon.com/512/864/864685.png" alt="Real-time updates icon" loading="lazy" />
+      <h3>Real-Time Updates</h3>
+      <p>Changes reflect instantly across devices using Firebase.</p>
+    </div>
+    <div class="feature" data-aos="flip-left" data-aos-delay="400" tabindex="0">
+      <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="Security icon" loading="lazy" />
+      <h3>Secure Authentication</h3>
+      <p>Powered by Firebase Auth for user safety.</p>
+      <br>
+    </div>
+  </section>
+  <section class="gallery" data-aos="fade-up" data-aos-duration="1200">
+    <div class="image-container">
+      <img src="images/student.jpg" alt="Students in action" loading="lazy" data-aos="zoom-in" data-aos-delay="0" tabindex="0" />
+      <div class="caption">Students in Action</div>
+    </div>
+    <div class="image-container">
+      <img src="images/class.jpeg" alt="Classroom learning" loading="lazy" data-aos="zoom-in" data-aos-delay="200" tabindex="0" />
+      <div class="caption">Classroom Learning</div>
+    </div>
+    <div class="image-container">
+      <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=400&q=60" alt="Education excellence" loading="lazy" data-aos="zoom-in" data-aos-delay="400" tabindex="0" />
+      <div class="caption">Education Excellence</div>
+    </div>
+    <div class="image-container">
+      <img src="images/school.webp" alt="School environment" loading="lazy" data-aos="zoom-in" data-aos-delay="600" tabindex="0" />
+      <div class="caption">School Environment</div>
+    </div>
+  </section>
+  <footer role="contentinfo">
+    <p>© 2025 D.I.T School Fees Tracker | Designed by OLUWAKAYODE CALEB OGELEYINBO</p>
+  </footer>
+  <button class="back-to-top" id="backToTop" aria-label="Back to Top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDD_facL7wwsMTXfrs7gzUrxtBZn3rIoew",
+      authDomain: "kayode-school-fees-tracker.firebaseapp.com",
+      projectId: "kayode-school-fees-tracker",
+      storageBucket: "kayode-school-fees-tracker.appspot.com",
+      messagingSenderId: "401342223859",
+      appId: "1:401342223859:web:255a87636c3cbedbc5ee86",
+      measurementId: "G-X243PGJ8T0",
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      logEvent(analytics, "page_view", { page_title: "Home" });
+    } catch (error) {
+      console.error("Firebase initialization failed:", error);
+    }
+
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: false,
+      mirror: true,
+    });
+
+    window.addEventListener('load', () => {
+      const preloader = document.getElementById('preloader');
+      preloader.classList.add('hidden');
+      setTimeout(() => { preloader.style.display = 'none'; }, 500);
+    });
+
+    const text = document.querySelector(".animated-text");
+    const message = "Manage and Track School Payments Easily";
+    let index = 0;
+    let isDeleting = false;
+    function typeText() {
+      if (!isDeleting && index <= message.length) {
+        text.innerHTML = message.slice(0, index++);
+        if (index > message.length) {
+          setTimeout(() => { isDeleting = true; }, 1000);
+        }
+      } else if (isDeleting && index >= 0) {
+        text.innerHTML = message.slice(0, index--);
+        if (index < 0) {
+          isDeleting = false;
+          index = 0;
+          setTimeout(typeText, 500);
+          return;
+        }
+      }
+      setTimeout(typeText, isDeleting ? 50 : 80);
+    }
+    typeText();
+
+    const toggle = document.getElementById("darkModeToggle");
+    if (localStorage.getItem("darkMode") === "enabled") {
+      document.body.classList.add("dark-mode");
+      toggle.checked = true;
+      toggle.setAttribute("aria-checked", "true");
+    }
+    toggle.addEventListener("change", () => {
+      if (toggle.checked) {
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("darkMode", "enabled");
+        toggle.setAttribute("aria-checked", "true");
+      } else {
+        document.body.classList.remove("dark-mode");
+        localStorage.setItem("darkMode", "disabled");
+        toggle.setAttribute("aria-checked", "false");
+      }
+    });
+
+    const hamburger = document.getElementById("hamburger");
+    const navMenu = document.getElementById("navMenu");
+    const hamburgerIcon = hamburger.querySelector("i");
+    function toggleMenu() {
+      const expanded = hamburger.getAttribute("aria-expanded") === "true";
+      hamburger.setAttribute("aria-expanded", String(!expanded));
+      navMenu.classList.toggle("open");
+      if (navMenu.classList.contains("open")) {
+        hamburgerIcon.classList.remove("fa-bars");
+        hamburgerIcon.classList.add("fa-times");
+        hamburger.setAttribute("aria-label", "Close navigation menu");
+      } else {
+        hamburgerIcon.classList.remove("fa-times");
+        hamburgerIcon.classList.add("fa-bars");
+        hamburger.setAttribute("aria-label", "Toggle navigation menu");
+      }
+    }
+    hamburger.addEventListener("click", toggleMenu);
+    hamburger.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
+    navMenu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        navMenu.classList.remove("open");
+        hamburgerIcon.classList.remove("fa-times");
+        hamburgerIcon.classList.add("fa-bars");
+        hamburger.setAttribute("aria-expanded", "false");
+        hamburger.setAttribute("aria-label", "Toggle navigation menu");
+      });
+    });
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    window.addEventListener("scroll", debounce(() => {
+      const bgImage = document.querySelector(".bg-image");
+      const scrollPosition = window.scrollY;
+      bgImage.style.transform = `translateY(${scrollPosition * 0.2}px)`;
+
+      const header = document.getElementById("header");
+      if (scrollPosition > 50) {
+        header.classList.add("shrink");
+      } else {
+        header.classList.remove("shrink");
+      }
+
+      const backToTop = document.getElementById("backToTop");
+      if (scrollPosition > 300) {
+        backToTop.classList.add("visible");
+      } else {
+        backToTop.classList.remove("visible");
+      }
+    }, 10));
+
+    const features = document.querySelectorAll(".feature");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+          } else {
+            entry.target.classList.remove("in-view");
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    features.forEach((feature) => observer.observe(feature));
+
+    const backToTop = document.getElementById("backToTop");
+    backToTop.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    const progressCircle = document.querySelector(".progress-circle .progress");
+    const progressPercent = 80;
+    const circumference = 2 * Math.PI * 40;
+    progressCircle.style.strokeDashoffset = circumference * (1 - progressPercent / 100);
+  </script>
+</body>
+</html>
